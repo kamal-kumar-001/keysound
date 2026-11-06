@@ -9,6 +9,8 @@ SHAREABLE_DMG="$PWD/$APP_NAME.dmg"
 
 echo "=== Building $APP_NAME ==="
 
+killall KeySound 2>/dev/null || true
+
 mkdir -p "$BUILD_DIR"
 mkdir -p .build/module-cache
 

@@ -10,12 +10,20 @@ public final class AppSettings: ObservableObject {
         static let volume = "KeySound_volume"
         static let selectedPack = "KeySound_selectedPack"
         static let pitchJitterEnabled = "KeySound_pitchJitterEnabled"
+        static let launchAtLogin = "KeySound_launchAtLogin"
     }
 
     private let defaults = UserDefaults.standard
 
     @Published public var isEnabled: Bool {
         didSet { defaults.set(isEnabled, forKey: Keys.isEnabled) }
+    }
+
+    @Published public var launchAtLogin: Bool {
+        didSet {
+            defaults.set(launchAtLogin, forKey: Keys.launchAtLogin)
+            LaunchAtLoginManager.shared.setEnabled(launchAtLogin)
+        }
     }
 
     @Published public var volume: Double {
@@ -63,6 +71,14 @@ public final class AppSettings: ObservableObject {
             self.pitchJitterEnabled = true
         } else {
             self.pitchJitterEnabled = defaults.bool(forKey: Keys.pitchJitterEnabled)
+        }
+
+        if defaults.object(forKey: Keys.launchAtLogin) == nil {
+            self.launchAtLogin = true
+            LaunchAtLoginManager.shared.setEnabled(true)
+        } else {
+            self.launchAtLogin = defaults.bool(forKey: Keys.launchAtLogin)
+            LaunchAtLoginManager.shared.setEnabled(self.launchAtLogin)
         }
 
         SoundEngine.shared.currentVolume = Float(self.volume)

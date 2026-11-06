@@ -32,11 +32,12 @@ public struct KeySoundPopover: View {
             // Accessibility Banner if permission is needed
             if !keyboardMonitor.isAccessibilityGranted {
                 accessibilityNoticeView
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 Divider()
                     .opacity(0.25)
             }
 
-            // Sound Controls Section (Volume & Pitch)
+            // Sound Controls Section (Volume & Pitch & Autostart)
             soundControlsSection
 
             Divider()
@@ -57,7 +58,8 @@ public struct KeySoundPopover: View {
             // Footer
             footerView
         }
-        .frame(width: 360, height: 550)
+        .frame(width: 360, height: 575)
+        .animation(.easeInOut(duration: 0.25), value: keyboardMonitor.isAccessibilityGranted)
         .background(
             VisualEffectView(material: .popover, blendingMode: .behindWindow)
         )
@@ -178,6 +180,26 @@ public struct KeySoundPopover: View {
                 Spacer()
 
                 Toggle("", isOn: $settings.pitchJitterEnabled)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .controlSize(.mini)
+            }
+
+            // Launch at Login Row
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.clockwise.circle")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    Text("Launch at Login")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $settings.launchAtLogin)
                     .toggleStyle(.switch)
                     .labelsHidden()
                     .controlSize(.mini)

@@ -24,7 +24,6 @@ public final class SoundSynthesizer {
         return wavData
     }
 
-    // Pre-warms the cache for all packs in the background
     public func preloadAll() {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -46,14 +45,24 @@ public final class SoundSynthesizer {
             return synthCherryRed(keyType: keyType)
         case .holyPanda:
             return synthHolyPanda(keyType: keyType)
+        case .alpsCream:
+            return synthAlpsCream(keyType: keyType)
         case .shotgun:
             return synthShotgun(keyType: keyType)
+        case .katanaSteel:
+            return synthKatanaSteel(keyType: keyType)
         case .typewriter:
             return synthTypewriter(keyType: keyType)
+        case .mouseClick:
+            return synthMouseClick(keyType: keyType)
         case .bubble:
             return synthBubble(keyType: keyType)
+        case .waterDrop:
+            return synthWaterDrop(keyType: keyType)
         case .arcade8Bit:
             return synthArcade8Bit(keyType: keyType)
+        case .laserBlaster:
+            return synthLaserBlaster(keyType: keyType)
         case .sciFiMech:
             return synthSciFi(keyType: keyType)
         case .cameraShutter:
@@ -61,7 +70,7 @@ public final class SoundSynthesizer {
         }
     }
 
-    // MARK: - Synthesis Algorithms
+    // MARK: - Synthesis Implementations
 
     // 1. Cherry MX Blue (Clicky)
     private func synthCherryBlue(keyType: KeyType) -> [Float] {
@@ -75,20 +84,15 @@ public final class SoundSynthesizer {
 
         for i in 0..<totalSamples {
             let t = Double(i) / sampleRate
-
-            // Sharp click transient
             let clickEnv = exp(-t * 900.0)
             let click = sin(2.0 * .pi * clickFreq * t) * clickEnv * 0.75
 
-            // Body clack
             let bodyEnv = exp(-t * 110.0)
             let body = sin(2.0 * .pi * bodyFreq * t) * bodyEnv * 0.55
 
-            // Bottom thump
             let bottomEnv = exp(-t * 70.0)
             let bottom = sin(2.0 * .pi * bottomFreq * t) * bottomEnv * (keyType == .space ? 0.6 : 0.35)
 
-            // Noise burst
             let noiseEnv = exp(-t * 1200.0)
             let noise = Float.random(in: -0.2...0.2) * Float(noiseEnv)
 
@@ -176,48 +180,106 @@ public final class SoundSynthesizer {
         return samples
     }
 
-    // 5. Shotgun Action
+    // 5. Alps Cream (Vintage Apple Extended Keyboard)
+    private func synthAlpsCream(keyType: KeyType) -> [Float] {
+        let duration: Double = (keyType == .space) ? 0.085 : 0.06
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: totalSamples)
+
+        let leafFreq: Double = 1950.0
+        let bodyFreq: Double = (keyType == .space) ? 280.0 : 540.0
+
+        for i in 0..<totalSamples {
+            let t = Double(i) / sampleRate
+            let leafEnv = exp(-t * 450.0)
+            let leaf = sin(2.0 * .pi * leafFreq * t) * leafEnv * 0.6
+
+            let bodyEnv = exp(-t * 85.0)
+            let body = (sin(2.0 * .pi * bodyFreq * t) + sin(2.0 * .pi * (bodyFreq * 1.5) * t) * 0.3) * bodyEnv * 0.65
+
+            let plasticNoise = Float.random(in: -0.12...0.12) * Float(exp(-t * 700.0))
+            let sample = Float(leaf + body) + plasticNoise
+            samples[i] = max(-1.0, min(1.0, sample * 0.9))
+        }
+        return samples
+    }
+
+    // 6. Shotgun Pump Action (Heavy, Punchy, Authentic)
     private func synthShotgun(keyType: KeyType) -> [Float] {
         let isReturn = (keyType == .returnKey)
-        let duration: Double = isReturn ? 0.16 : 0.085
+        let isSpace = (keyType == .space)
+        let duration: Double = isReturn ? 0.24 : (isSpace ? 0.12 : 0.09)
         let totalSamples = Int(sampleRate * duration)
         var samples = [Float](repeating: 0, count: totalSamples)
 
         for i in 0..<totalSamples {
             let t = Double(i) / sampleRate
 
-            // First metallic rack / slide
-            let rackT = t
-            let rackEnv = exp(-rackT * 280.0)
-            let metalRack = (sin(2.0 * .pi * 2400.0 * rackT) + sin(2.0 * .pi * 3800.0 * rackT) * 0.5) * rackEnv * 0.65
+            if isReturn {
+                // BLAST IMPACT followed by immediate pump rack!
+                let blastEnv = exp(-t * 40.0)
+                let blastLow = sin(2.0 * .pi * 65.0 * t) * blastEnv * 0.9
+                let blastNoise = Float.random(in: -0.4...0.4) * Float(exp(-t * 180.0))
 
-            // Heavy mechanical lock / impact
-            let impactT = max(0.0, t - 0.012)
-            let impactEnv = exp(-impactT * 60.0)
-            let impact = sin(2.0 * .pi * 110.0 * impactT) * impactEnv * 0.8
+                // Shell eject & rack at t = 0.08s
+                var rack: Double = 0
+                if t > 0.07 {
+                    let tr = t - 0.07
+                    let rackEnv = exp(-tr * 140.0)
+                    rack = (sin(2.0 * .pi * 2200.0 * tr) * 0.5 + sin(2.0 * .pi * 140.0 * tr) * 0.7) * rackEnv
+                }
 
-            // Metallic trigger cock / snap
-            let snapT = max(0.0, t - 0.02)
-            let snapEnv = exp(-snapT * 400.0)
-            let snap = sin(2.0 * .pi * 4200.0 * snapT) * snapEnv * 0.5
+                let s = Float(blastLow + rack) + blastNoise
+                samples[i] = max(-1.0, min(1.0, s * 0.92))
+            } else {
+                // Pump rack slide & bolt lock
+                let slideEnv = exp(-t * 220.0)
+                let slide = (sin(2.0 * .pi * 2600.0 * t) * 0.5 + sin(2.0 * .pi * 3800.0 * t) * 0.35) * slideEnv
 
-            var sample = Float(metalRack + impact + snap)
+                // Heavy mechanical hammer/bolt strike
+                let boltT = max(0.0, t - 0.015)
+                let boltEnv = exp(-boltT * 85.0)
+                let boltFreq = isSpace ? 85.0 : 120.0
+                let bolt = sin(2.0 * .pi * boltFreq * boltT) * boltEnv * 0.85
 
-            // Second pump rack for Return key
-            if isReturn && t > 0.07 {
-                let t2 = t - 0.07
-                let pumpEnv = exp(-t2 * 120.0)
-                let pump = sin(2.0 * .pi * 160.0 * t2) * pumpEnv * 0.7
-                let pumpMetal = sin(2.0 * .pi * 2800.0 * t2) * exp(-t2 * 350.0) * 0.5
-                sample += Float(pump + pumpMetal)
+                let snapNoise = Float.random(in: -0.2...0.2) * Float(exp(-t * 900.0))
+                let s = Float(slide + bolt) + snapNoise
+                samples[i] = max(-1.0, min(1.0, s * 0.9))
             }
-
-            samples[i] = max(-1.0, min(1.0, sample * 0.85))
         }
         return samples
     }
 
-    // 6. Vintage Typewriter
+    // 7. Katana Blade Clash (Sharp Steel Edge Strike & Resonant Ring)
+    private func synthKatanaSteel(keyType: KeyType) -> [Float] {
+        let isReturn = (keyType == .returnKey)
+        let duration: Double = isReturn ? 0.26 : 0.14
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: totalSamples)
+
+        let strikeFreq: Double = (keyType == .space) ? 3100.0 : 4200.0
+        let ringFreq1: Double = 2340.0
+        let ringFreq2: Double = 4680.0
+
+        for i in 0..<totalSamples {
+            let t = Double(i) / sampleRate
+
+            // Sharp edge transient
+            let strikeEnv = exp(-t * 600.0)
+            let strike = sin(2.0 * .pi * strikeFreq * t) * strikeEnv * 0.8
+
+            // Lingering metallic ring
+            let ringEnv = exp(-t * (isReturn ? 18.0 : 35.0))
+            let ring = (sin(2.0 * .pi * ringFreq1 * t) * 0.5 + sin(2.0 * .pi * ringFreq2 * t) * 0.25) * ringEnv
+
+            let metalSpark = Float.random(in: -0.15...0.15) * Float(exp(-t * 800.0))
+            let sample = Float(strike + ring) + metalSpark
+            samples[i] = max(-1.0, min(1.0, sample * 0.88))
+        }
+        return samples
+    }
+
+    // 8. Vintage Typewriter
     private func synthTypewriter(keyType: KeyType) -> [Float] {
         let isReturn = (keyType == .returnKey)
         let duration: Double = isReturn ? 0.28 : 0.065
@@ -226,12 +288,9 @@ public final class SoundSynthesizer {
 
         for i in 0..<totalSamples {
             let t = Double(i) / sampleRate
-
-            // Steel bar strike
             let strikeEnv = exp(-t * 260.0)
             let strike = (sin(2.0 * .pi * 1920.0 * t) + sin(2.0 * .pi * 3400.0 * t) * 0.6) * strikeEnv * 0.65
 
-            // Platen clunk
             let platenEnv = exp(-t * 70.0)
             let platen = sin(2.0 * .pi * 420.0 * t) * platenEnv * 0.55
 
@@ -239,8 +298,8 @@ public final class SoundSynthesizer {
 
             // Carriage return bell DING for Return key!
             if isReturn {
-                let bellEnv = exp(-t * 12.0) // Slow bell ring
-                let bell = sin(2.0 * .pi * 2793.0 * t) * bellEnv * 0.65 // High bell note (F7)
+                let bellEnv = exp(-t * 12.0)
+                let bell = sin(2.0 * .pi * 2793.0 * t) * bellEnv * 0.65
                 let bellHarmonic = sin(2.0 * .pi * 5586.0 * t) * exp(-t * 20.0) * 0.25
                 sample += Float(bell + bellHarmonic)
             }
@@ -250,7 +309,31 @@ public final class SoundSynthesizer {
         return samples
     }
 
-    // 7. Bubble Pop
+    // 9. Gaming Mouse Microswitch (Omron D2FC)
+    private func synthMouseClick(keyType: KeyType) -> [Float] {
+        let duration: Double = 0.035
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: totalSamples)
+
+        let clickFreq: Double = (keyType == .space) ? 3600.0 : 4500.0
+        let bodyFreq: Double = 920.0
+
+        for i in 0..<totalSamples {
+            let t = Double(i) / sampleRate
+            let snapEnv = exp(-t * 950.0)
+            let snap = sin(2.0 * .pi * clickFreq * t) * snapEnv * 0.85
+
+            let bodyEnv = exp(-t * 300.0)
+            let body = sin(2.0 * .pi * bodyFreq * t) * bodyEnv * 0.35
+
+            let clickNoise = Float.random(in: -0.1...0.1) * Float(exp(-t * 1200.0))
+            let s = Float(snap + body) + clickNoise
+            samples[i] = max(-1.0, min(1.0, s * 0.85))
+        }
+        return samples
+    }
+
+    // 10. Bubble Pop (Liquid Cavitation)
     private func synthBubble(keyType: KeyType) -> [Float] {
         let duration: Double = 0.05
         let totalSamples = Int(sampleRate * duration)
@@ -271,7 +354,26 @@ public final class SoundSynthesizer {
         return samples
     }
 
-    // 8. Retro 8-Bit
+    // 11. Pure Water Droplet (Crystalline Splash)
+    private func synthWaterDrop(keyType: KeyType) -> [Float] {
+        let duration: Double = 0.065
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: totalSamples)
+
+        let f0: Double = (keyType == .space) ? 720.0 : 1420.0
+
+        for i in 0..<totalSamples {
+            let t = Double(i) / sampleRate
+            // Upward frequency swoop
+            let chirpFreq = f0 * (1.0 + t * 4.0)
+            let env = exp(-t * 65.0) * sin(.pi * min(1.0, t / duration))
+            let droplet = sin(2.0 * .pi * chirpFreq * t) * env
+            samples[i] = Float(droplet * 0.9)
+        }
+        return samples
+    }
+
+    // 12. Retro 8-Bit Arcade
     private func synthArcade8Bit(keyType: KeyType) -> [Float] {
         let duration: Double = (keyType == .returnKey) ? 0.12 : 0.04
         let totalSamples = Int(sampleRate * duration)
@@ -283,7 +385,6 @@ public final class SoundSynthesizer {
             let t = Double(i) / sampleRate
             var f = baseFreq
             if keyType == .returnKey {
-                // Arpeggio
                 if t > 0.08 { f *= 1.5 }
                 else if t > 0.04 { f *= 1.25 }
             } else {
@@ -299,7 +400,28 @@ public final class SoundSynthesizer {
         return samples
     }
 
-    // 9. Sci-Fi Cyber Relay
+    // 13. Sci-Fi Laser Blaster
+    private func synthLaserBlaster(keyType: KeyType) -> [Float] {
+        let isReturn = (keyType == .returnKey)
+        let duration: Double = isReturn ? 0.11 : 0.055
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: totalSamples)
+
+        let startFreq: Double = (keyType == .space) ? 2400.0 : 4400.0
+        let endFreq: Double = (keyType == .space) ? 140.0 : 280.0
+
+        for i in 0..<totalSamples {
+            let t = Double(i) / sampleRate
+            let decayCurve = exp(-t * (isReturn ? 35.0 : 65.0))
+            let freq = endFreq + (startFreq - endFreq) * decayCurve
+            let laser = sin(2.0 * .pi * freq * t) * decayCurve
+
+            samples[i] = Float(laser * 0.88)
+        }
+        return samples
+    }
+
+    // 14. Sci-Fi Cyber Relay
     private func synthSciFi(keyType: KeyType) -> [Float] {
         let duration: Double = 0.045
         let totalSamples = Int(sampleRate * duration)
@@ -317,7 +439,7 @@ public final class SoundSynthesizer {
         return samples
     }
 
-    // 10. Camera Shutter
+    // 15. Camera Shutter
     private func synthCameraShutter(keyType: KeyType) -> [Float] {
         let duration: Double = 0.085
         let totalSamples = Int(sampleRate * duration)
@@ -325,12 +447,9 @@ public final class SoundSynthesizer {
 
         for i in 0..<totalSamples {
             let t = Double(i) / sampleRate
-
-            // First curtain snap
             let snap1Env = exp(-t * 350.0)
             let snap1 = sin(2.0 * .pi * 2300.0 * t) * snap1Env * 0.7
 
-            // Mirror slap and second curtain snap after 18ms
             var slap: Double = 0
             if t > 0.018 {
                 let t2 = t - 0.018
@@ -348,7 +467,6 @@ public final class SoundSynthesizer {
     }
 
     // MARK: - WAV Encoder
-
     private func createWAV(from floatSamples: [Float], sampleRate: Int) -> Data {
         var data = Data()
         let numChannels: UInt16 = 2
@@ -358,12 +476,10 @@ public final class SoundSynthesizer {
         let subchunk2Size = UInt32(floatSamples.count * Int(numChannels) * Int(bitsPerSample / 8))
         let chunkSize = 36 + subchunk2Size
 
-        // RIFF header
         data.append(contentsOf: [0x52, 0x49, 0x46, 0x46]) // "RIFF"
         data.append(contentsOf: withUnsafeBytes(of: chunkSize.littleEndian) { Array($0) })
         data.append(contentsOf: [0x57, 0x41, 0x56, 0x45]) // "WAVE"
 
-        // "fmt " chunk
         data.append(contentsOf: [0x66, 0x6D, 0x74, 0x20]) // "fmt "
         let subchunk1Size: UInt32 = 16
         data.append(contentsOf: withUnsafeBytes(of: subchunk1Size.littleEndian) { Array($0) })
@@ -376,18 +492,14 @@ public final class SoundSynthesizer {
         data.append(contentsOf: withUnsafeBytes(of: blockAlign.littleEndian) { Array($0) })
         data.append(contentsOf: withUnsafeBytes(of: bitsPerSample.littleEndian) { Array($0) })
 
-        // "data" chunk
         data.append(contentsOf: [0x64, 0x61, 0x74, 0x61]) // "data"
         data.append(contentsOf: withUnsafeBytes(of: subchunk2Size.littleEndian) { Array($0) })
 
-        // 16-bit PCM Stereo samples (L and R duplicate)
         for sample in floatSamples {
             let clamped = max(-1.0, min(1.0, sample))
             let int16Sample = Int16(clamped * 32767.0).littleEndian
             withUnsafeBytes(of: int16Sample) { bytes in
-                // Left channel
                 data.append(contentsOf: bytes)
-                // Right channel
                 data.append(contentsOf: bytes)
             }
         }

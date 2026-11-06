@@ -20,6 +20,21 @@ public final class KeyboardMonitor: ObservableObject {
 
     private init() {
         checkAccessibilityStatus()
+
+        // Observe when app becomes active or is focused
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidBecomeActive() {
+        checkAccessibilityStatus()
+        if isAccessibilityGranted && eventTap == nil {
+            setupEventTap()
+        }
     }
 
     public func start() {
@@ -27,9 +42,9 @@ public final class KeyboardMonitor: ObservableObject {
         setupEventTap()
         setupLocalMonitor()
 
-        // Check accessibility status periodically if not granted yet
+        // Check accessibility status periodically (1.0s) while not granted
         checkTimer = Timer.scheduledTimer(
-            timeInterval: 2.0,
+            timeInterval: 1.0,
             target: self,
             selector: #selector(timerTick),
             userInfo: nil,
@@ -39,8 +54,19 @@ public final class KeyboardMonitor: ObservableObject {
 
     @objc private func timerTick() {
         checkAccessibilityStatus()
-        if isAccessibilityGranted && eventTap == nil {
-            setupEventTap()
+        if isAccessibilityGranted {
+            if eventTap == nil {
+                setupEventTap()
+            }
+            // Once granted, slow down check interval
+            checkTimer?.invalidate()
+            checkTimer = Timer.scheduledTimer(
+                timeInterval: 4.0,
+                target: self,
+                selector: #selector(timerTick),
+                userInfo: nil,
+                repeats: true
+            )
         }
     }
 
