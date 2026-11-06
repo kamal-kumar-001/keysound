@@ -1,6 +1,12 @@
 # KeySound for macOS
 
+[![GitHub](https://img.shields.io/badge/GitHub-kamal--kumar--001%2Fkeysound-blue?logo=github)](https://github.com/kamal-kumar-001/keysound)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform: macOS](https://img.shields.io/badge/Platform-macOS%2012%2B-lightgrey?logo=apple)](https://github.com/kamal-kumar-001/keysound)
+
 KeySound is a lightweight, subtle macOS menu bar application that plays satisfying keystroke sound effects with ultra-low latency as you type in any application. Featuring 15 built-in sound packs, custom audio import, an independent volume control separate from your Mac's system volume, organic pitch variation, and native Apple aesthetics.
+
+Official Repository: [https://github.com/kamal-kumar-001/keysound](https://github.com/kamal-kumar-001/keysound)
 
 ## Features
 
