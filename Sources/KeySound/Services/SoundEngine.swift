@@ -9,7 +9,7 @@ public final class SoundEngine: NSObject {
     private var currentVoiceIndex = 0
     private let engineQueue = DispatchQueue(label: "com.keysound.engine", qos: .userInteractive)
 
-    private var activePack: SoundPackID = .cherryBlue
+    private var activePackKey: String = SoundPackID.cherryBlue.rawValue
     private var cachedDataByPackAndKey: [String: Data] = [:]
     public var currentVolume: Float = 0.75
     public var isPitchJitterEnabled: Bool = true
@@ -19,29 +19,50 @@ public final class SoundEngine: NSObject {
         preloadActivePack()
     }
 
-    public func updateActivePack(_ pack: SoundPackID) {
+    public func updateActivePack(key: String) {
         engineQueue.async { [weak self] in
             guard let self = self else { return }
-            self.activePack = pack
+            self.activePackKey = key
             self.preloadActivePack()
         }
     }
 
+    public func updateActivePack(_ pack: SoundPackID) {
+        updateActivePack(key: pack.rawValue)
+    }
+
     private func preloadActivePack() {
-        for keyType in KeyType.allCases {
-            let key = "\(activePack.rawValue)_\(keyType.rawValue)"
-            if cachedDataByPackAndKey[key] == nil {
-                let data = SoundSynthesizer.shared.soundData(for: activePack, keyType: keyType)
-                cachedDataByPackAndKey[key] = data
+        if !activePackKey.hasPrefix("custom_"), let pack = SoundPackID(rawValue: activePackKey) {
+            for keyType in KeyType.allCases {
+                let key = "\(pack.rawValue)_\(keyType.rawValue)"
+                if cachedDataByPackAndKey[key] == nil {
+                    let data = SoundSynthesizer.shared.soundData(for: pack, keyType: keyType)
+                    cachedDataByPackAndKey[key] = data
+                }
             }
         }
     }
 
-    public func playKey(type: KeyType, packOverride: SoundPackID? = nil, volumeOverride: Double? = nil) {
-        let pack = packOverride ?? activePack
-        let synth = SoundSynthesizer.shared
+    public func playKey(type: KeyType, packKeyOverride: String? = nil, volumeOverride: Double? = nil) {
+        let packKey = packKeyOverride ?? activePackKey
         let vol = volumeOverride.map { Float($0) } ?? self.currentVolume
         let jitter = self.isPitchJitterEnabled
+
+        if packKey.hasPrefix("custom_") {
+            let customId = String(packKey.dropFirst(7))
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if let data = CustomSoundStore.shared.audioData(for: customId, keyType: type) {
+                    self.engineQueue.async {
+                        self.playAudioData(data, volume: vol, pitchJitter: jitter)
+                    }
+                }
+            }
+            return
+        }
+
+        let pack = SoundPackID(rawValue: packKey) ?? .cherryBlue
+        let synth = SoundSynthesizer.shared
 
         engineQueue.async { [weak self] in
             guard let self = self else { return }
@@ -59,8 +80,20 @@ public final class SoundEngine: NSObject {
         }
     }
 
+    public func preview(packKey: String) {
+        playKey(type: .standard, packKeyOverride: packKey, volumeOverride: nil)
+    }
+
     public func preview(pack: SoundPackID) {
-        playKey(type: .standard, packOverride: pack, volumeOverride: nil)
+        preview(packKey: pack.rawValue)
+    }
+
+    public func playAudioDataViaVoicePool(_ data: Data) {
+        let vol = self.currentVolume
+        let jitter = self.isPitchJitterEnabled
+        engineQueue.async { [weak self] in
+            self?.playAudioData(data, volume: vol, pitchJitter: jitter)
+        }
     }
 
     private func playAudioData(_ data: Data, volume: Float, pitchJitter: Bool) {
@@ -72,7 +105,6 @@ public final class SoundEngine: NSObject {
             player.volume = max(0.0, min(1.0, volume))
 
             if pitchJitter {
-                // Subtle random variation (98% to 102%) makes mechanical typing organic
                 let jitter = Float.random(in: 0.98...1.02)
                 player.rate = jitter
             } else {
@@ -82,7 +114,6 @@ public final class SoundEngine: NSObject {
             player.prepareToPlay()
             player.play()
 
-            // Keep reference in round-robin pool so ARC doesn't deallocate before finished playing
             if self.voicePool.count < self.voicePoolSize {
                 self.voicePool.append(player)
             } else {
@@ -90,7 +121,7 @@ public final class SoundEngine: NSObject {
                 self.currentVoiceIndex = (self.currentVoiceIndex + 1) % self.voicePoolSize
             }
         } catch {
-            // Audio player error handling
+            // Audio playback error handling
         }
     }
 }

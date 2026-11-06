@@ -4,21 +4,38 @@ import AppKit
 public struct KeySoundPopover: View {
     @ObservedObject var settings = AppSettings.shared
     @ObservedObject var keyboardMonitor = KeyboardMonitor.shared
+    @ObservedObject var customStore = CustomSoundStore.shared
     @State private var selectedFilter: String = "All"
     @State private var searchText: String = ""
+    @State private var isShowingAddSoundSheet: Bool = false
 
     public let onQuit: () -> Void
 
-    private let categories = ["All", "Mechanical", "Tactical", "Vintage", "Digital", "Playful", "Acoustic"]
+    private let categories = ["All", "Custom", "Mechanical", "Tactical", "Vintage", "Digital", "Playful", "Acoustic"]
 
-    private var filteredPacks: [SoundPackID] {
-        SoundPackID.allCases.filter { pack in
+    private var filteredCustomPacks: [CustomSoundPack] {
+        guard selectedFilter == "All" || selectedFilter == "Custom" else { return [] }
+        if searchText.isEmpty {
+            return customStore.customPacks
+        }
+        return customStore.customPacks.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    private var filteredBuiltInPacks: [SoundPackID] {
+        guard selectedFilter != "Custom" else { return [] }
+        return SoundPackID.allCases.filter { pack in
             let matchesCategory = (selectedFilter == "All" || pack.category == selectedFilter)
             let matchesSearch = searchText.isEmpty ||
                 pack.title.localizedCaseInsensitiveContains(searchText) ||
                 pack.subtitle.localizedCaseInsensitiveContains(searchText)
             return matchesCategory && matchesSearch
         }
+    }
+
+    private var totalAvailableCount: Int {
+        filteredCustomPacks.count + filteredBuiltInPacks.count
     }
 
     public var body: some View {
@@ -58,11 +75,14 @@ public struct KeySoundPopover: View {
             // Footer
             footerView
         }
-        .frame(width: 360, height: 575)
+        .frame(width: 360, height: 585)
         .animation(.easeInOut(duration: 0.25), value: keyboardMonitor.isAccessibilityGranted)
         .background(
             VisualEffectView(material: .popover, blendingMode: .behindWindow)
         )
+        .sheet(isPresented: $isShowingAddSoundSheet) {
+            AddSoundSheet()
+        }
     }
 
     // MARK: - Header
@@ -88,9 +108,10 @@ public struct KeySoundPopover: View {
                         .frame(width: 7, height: 7)
                 }
 
-                Text(settings.isEnabled ? "Active • Playing \(settings.selectedPack.title)" : "Disabled")
+                Text(settings.isEnabled ? "Active • \(settings.selectedPackTitle)" : "Disabled")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -133,7 +154,7 @@ public struct KeySoundPopover: View {
         .background(Color.orange.opacity(0.1))
     }
 
-    // MARK: - Sound Controls (Separate Volume & Pitch Jitter)
+    // MARK: - Sound Controls
     private var soundControlsSection: some View {
         VStack(spacing: 8) {
             // Volume Row
@@ -212,15 +233,35 @@ public struct KeySoundPopover: View {
     // MARK: - Sound Packs Section
     private var soundPacksSection: some View {
         VStack(spacing: 6) {
-            // Header & Category Chips
+            // Header with "+ Add Sound" Button
             HStack {
                 Text("SOUND PACKS")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(.secondary)
 
+                Button {
+                    isShowingAddSoundSheet = true
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("Add Sound")
+                            .font(.system(size: 10, weight: .semibold))
+                    }
+                    .foregroundColor(.accentColor)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(Color.accentColor.opacity(0.12))
+                    )
+                }
+                .buttonStyle(.plain)
+                .help("Add a custom sound pack")
+
                 Spacer()
 
-                Text("\(filteredPacks.count) available")
+                Text("\(totalAvailableCount) available")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary.opacity(0.8))
             }
@@ -236,15 +277,23 @@ public struct KeySoundPopover: View {
                                 selectedFilter = cat
                             }
                         } label: {
-                            Text(cat)
-                                .font(.system(size: 10, weight: selectedFilter == cat ? .semibold : .regular))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule()
-                                        .fill(selectedFilter == cat ? Color.accentColor : Color.primary.opacity(0.06))
-                                )
-                                .foregroundColor(selectedFilter == cat ? .white : .primary.opacity(0.8))
+                            HStack(spacing: 4) {
+                                Text(cat)
+                                if cat == "Custom" && !customStore.customPacks.isEmpty {
+                                    Text("\(customStore.customPacks.count)")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .padding(.horizontal, 4)
+                                        .background(Capsule().fill(Color.primary.opacity(0.15)))
+                                }
+                            }
+                            .font(.system(size: 10, weight: selectedFilter == cat ? .semibold : .regular))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(selectedFilter == cat ? Color.accentColor : Color.primary.opacity(0.06))
+                            )
+                            .foregroundColor(selectedFilter == cat ? .white : .primary.opacity(0.8))
                         }
                         .buttonStyle(.plain)
                     }
@@ -253,15 +302,39 @@ public struct KeySoundPopover: View {
                 .padding(.vertical, 2)
             }
 
-            // Sound Pack List
+            // Combined Sound Pack List
             ScrollView {
                 VStack(spacing: 4) {
-                    ForEach(filteredPacks) { pack in
+                    // Custom Packs First
+                    ForEach(filteredCustomPacks) { pack in
+                        CustomSoundPackCard(
+                            pack: pack,
+                            isSelected: settings.selectedPackKey == "custom_\(pack.id)",
+                            onSelect: {
+                                settings.selectedPackKey = "custom_\(pack.id)"
+                                SoundEngine.shared.preview(packKey: "custom_\(pack.id)")
+                            },
+                            onPreview: {
+                                SoundEngine.shared.preview(packKey: "custom_\(pack.id)")
+                            },
+                            onDelete: {
+                                withAnimation(.easeOut(duration: 0.15)) {
+                                    customStore.removePack(id: pack.id)
+                                    if settings.selectedPackKey == "custom_\(pack.id)" {
+                                        settings.selectedPackKey = SoundPackID.cherryBlue.rawValue
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    // Built-In Packs
+                    ForEach(filteredBuiltInPacks) { pack in
                         SoundPackCard(
                             pack: pack,
-                            isSelected: settings.selectedPack == pack,
+                            isSelected: settings.selectedPackKey == pack.rawValue,
                             onSelect: {
-                                settings.selectedPack = pack
+                                settings.selectedPackKey = pack.rawValue
                                 SoundEngine.shared.updateActivePack(pack)
                                 SoundEngine.shared.preview(pack: pack)
                             },

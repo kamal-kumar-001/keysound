@@ -33,11 +33,27 @@ public final class AppSettings: ObservableObject {
         }
     }
 
-    @Published public var selectedPack: SoundPackID {
+    @Published public var selectedPackKey: String {
         didSet {
-            defaults.set(selectedPack.rawValue, forKey: Keys.selectedPack)
-            SoundEngine.shared.updateActivePack(selectedPack)
+            defaults.set(selectedPackKey, forKey: Keys.selectedPack)
+            SoundEngine.shared.updateActivePack(key: selectedPackKey)
         }
+    }
+
+    public var selectedPack: SoundPackID {
+        get { SoundPackID(rawValue: selectedPackKey) ?? .cherryBlue }
+        set { selectedPackKey = newValue.rawValue }
+    }
+
+    public var selectedPackTitle: String {
+        if selectedPackKey.hasPrefix("custom_") {
+            let customId = String(selectedPackKey.dropFirst(7))
+            if let custom = CustomSoundStore.shared.customPacks.first(where: { $0.id == customId }) {
+                return custom.name
+            }
+            return "Custom Sound"
+        }
+        return selectedPack.title
     }
 
     @Published public var pitchJitterEnabled: Bool {
@@ -60,11 +76,10 @@ public final class AppSettings: ObservableObject {
             self.volume = defaults.double(forKey: Keys.volume)
         }
 
-        if let savedPackRaw = defaults.string(forKey: Keys.selectedPack),
-           let pack = SoundPackID(rawValue: savedPackRaw) {
-            self.selectedPack = pack
+        if let savedPackRaw = defaults.string(forKey: Keys.selectedPack) {
+            self.selectedPackKey = savedPackRaw
         } else {
-            self.selectedPack = .cherryBlue
+            self.selectedPackKey = SoundPackID.cherryBlue.rawValue
         }
 
         if defaults.object(forKey: Keys.pitchJitterEnabled) == nil {
@@ -83,6 +98,6 @@ public final class AppSettings: ObservableObject {
 
         SoundEngine.shared.currentVolume = Float(self.volume)
         SoundEngine.shared.isPitchJitterEnabled = self.pitchJitterEnabled
-        SoundEngine.shared.updateActivePack(self.selectedPack)
+        SoundEngine.shared.updateActivePack(key: self.selectedPackKey)
     }
 }
