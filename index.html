@@ -9,7 +9,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="KeySound — Satisfying Keystroke Audio for macOS">
-  <meta property="og:description" content="Turn your quiet MacBook into a tactile mechanical powerhouse. 15 sound packs, independent volume, and zero latency.">
+  <meta property="og:description" content="Turn your quiet MacBook into a tactile mechanical powerhouse. 15 sound packs, independent volume, and ultra-low latency.">
   <meta property="og:image" content="assets/icon.png">
   <meta property="og:type" content="website">
 
@@ -27,7 +27,7 @@
       --text-dim: #8b99ae;
       --border: rgba(15, 23, 42, 0.09);
       --border-accent: rgba(59, 130, 246, 0.4);
-      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
       --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
     }
 
@@ -67,7 +67,7 @@
       z-index: 100;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      background: rgba(247, 249, 253, 0.8);
+      background: rgba(248, 250, 253, 0.92);
       border-bottom: 1px solid var(--border);
     }
 
@@ -681,6 +681,9 @@
     .soundboard-container { animation-delay: 0.38s; }
     @media (prefers-reduced-motion: reduce) { .hero .pill-badge, .hero h1, .hero p, .hero .hero-actions, .hero .version-meta, .soundboard-container { animation: none; } }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -719,7 +722,7 @@
 
       <h1>Satisfying Keystroke Audio<br>For Every Mac.</h1>
       
-      <p>Transform your silent MacBook keyboard into a tactile mechanical powerhouse. 15 studio-crafted sound profiles, zero perceptible latency (&lt; 5ms), and independent volume controls.</p>
+      <p>Transform your silent MacBook keyboard into a tactile mechanical powerhouse. 15 studio-crafted sound profiles, no perceptible latency, and independent volume controls.</p>
 
       <div class="hero-actions">
         <a href="KeySound.dmg" download class="btn-primary">
@@ -846,8 +849,8 @@
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon-wrapper">⚡</div>
-          <h3>Ultra-Low Latency (&lt; 5ms)</h3>
-          <p>Powered by a 20-voice concurrent audio pool pre-buffered in memory. Handles blistering 120+ WPM typing speeds with zero audio clipping or latency.</p>
+          <h3>Ultra-Low Latency</h3>
+          <p>Powered by a 20-voice concurrent audio pool pre-buffered in memory. Keeps up with blistering 100+ WPM typing speeds without audio clipping or perceptible lag.</p>
         </div>
 
         <div class="feature-card">
