@@ -15,17 +15,17 @@
 
   <style>
     :root {
-      --bg: #07090e;
-      --bg-surface: #0f131c;
-      --bg-card: #151b28;
-      --bg-card-hover: #1e2638;
-      --accent: #3b82f6;
-      --accent-glow: rgba(59, 130, 246, 0.35);
-      --accent-secondary: #06b6d4;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --border: rgba(255, 255, 255, 0.08);
+      --bg: #f7f9fd;
+      --bg-surface: #ffffff;
+      --bg-card: #f4f7fc;
+      --bg-card-hover: #eaf1fc;
+      --accent: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.28);
+      --accent-secondary: #0e7490;
+      --text: #0f172a;
+      --text-muted: #55647c;
+      --text-dim: #8b99ae;
+      --border: rgba(15, 23, 42, 0.09);
       --border-accent: rgba(59, 130, 246, 0.4);
       --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
@@ -67,7 +67,7 @@
       z-index: 100;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      background: rgba(7, 9, 14, 0.8);
+      background: rgba(247, 249, 253, 0.8);
       border-bottom: 1px solid var(--border);
     }
 
@@ -103,7 +103,7 @@
       padding: 2px 8px;
       border-radius: 12px;
       background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
+      color: #2563eb;
       border: 1px solid rgba(59, 130, 246, 0.3);
     }
 
@@ -140,7 +140,7 @@
     }
 
     .btn-nav:hover {
-      background: #2563eb;
+      background: #1d4ed8;
       transform: translateY(-1px);
       box-shadow: 0 4px 14px var(--accent-glow);
     }
@@ -161,7 +161,7 @@
       gap: 8px;
       padding: 6px 14px;
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.04);
+      background: #ffffff;
       border: 1px solid var(--border);
       font-size: 0.84rem;
       color: var(--text-muted);
@@ -182,7 +182,7 @@
       line-height: 1.12;
       letter-spacing: -0.03em;
       margin-bottom: 20px;
-      background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+      background: linear-gradient(180deg, #0f172a 30%, #2563eb 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -233,15 +233,15 @@
       font-size: 1rem;
       font-weight: 600;
       text-decoration: none;
-      background: rgba(255, 255, 255, 0.05);
+      background: #ffffff;
       color: var(--text);
       border: 1px solid var(--border);
       transition: all 0.2s ease;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: #eaf1fc;
+      border-color: rgba(37, 99, 235, 0.4);
     }
 
     .version-meta {
@@ -257,7 +257,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(15, 23, 42, 0.04);
       position: relative;
       overflow: hidden;
     }
@@ -319,10 +319,10 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      background: rgba(0, 0, 0, 0.35);
+      background: #edf1f8;
       padding: 16px;
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(15, 23, 42, 0.07);
       margin-bottom: 16px;
     }
 
@@ -335,8 +335,8 @@
     .key {
       flex: 1;
       height: 44px;
-      background: var(--bg-card);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.1);
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -347,7 +347,7 @@
       color: var(--text-muted);
       cursor: pointer;
       user-select: none;
-      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
+      box-shadow: 0 3px 0 rgba(15, 23, 42, 0.15);
       transition: all 0.08s ease;
     }
 
@@ -358,10 +358,10 @@
 
     .key.active, .key:active {
       transform: translateY(2px);
-      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.2);
       background: var(--accent);
       color: white;
-      border-color: #60a5fa;
+      border-color: #93c5fd;
     }
 
     .key.wide-1 { flex: 1.5; }
@@ -378,7 +378,7 @@
 
     .typing-tester-input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.03);
+      background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px 14px;
@@ -392,7 +392,7 @@
 
     .typing-tester-input:focus {
       border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.05);
+      background: #f6faff;
     }
 
     /* Sound Packs Showcase Grid */
@@ -452,7 +452,7 @@
       background: var(--bg-card);
       border-color: var(--border-accent);
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
     }
 
     .pack-top {
@@ -466,7 +466,7 @@
       width: 38px;
       height: 38px;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(37, 99, 235, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -478,7 +478,7 @@
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.05);
       color: var(--text-muted);
     }
 
@@ -502,7 +502,7 @@
       font-size: 0.82rem;
       font-weight: 600;
       background: rgba(59, 130, 246, 0.1);
-      color: #60a5fa;
+      color: #2563eb;
       border: 1px solid rgba(59, 130, 246, 0.25);
       padding: 6px 12px;
       border-radius: 6px;
@@ -539,7 +539,7 @@
       align-items: center;
       justify-content: center;
       font-size: 1.3rem;
-      color: #60a5fa;
+      color: #2563eb;
       margin-bottom: 18px;
     }
 
@@ -600,7 +600,7 @@
       max-width: 1180px;
       margin: 40px auto 80px;
       padding: 60px 30px;
-      background: linear-gradient(180deg, var(--bg-surface) 0%, rgba(15, 19, 28, 0.5) 100%);
+      background: linear-gradient(180deg, #ffffff 0%, rgba(37, 99, 235, 0.07) 100%);
       border: 1px solid var(--border);
       border-radius: 20px;
       text-align: center;
@@ -670,6 +670,16 @@
       .soundboard-header { flex-direction: column; align-items: flex-start; }
       .soundboard-controls { width: 100%; justify-content: space-between; }
     }
+  
+    /* Light-theme hero motion */
+    @keyframes heroFadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .hero .pill-badge, .hero h1, .hero p, .hero .hero-actions, .hero .version-meta, .soundboard-container { animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .hero h1 { animation-delay: 0.08s; }
+    .hero p { animation-delay: 0.16s; }
+    .hero .hero-actions { animation-delay: 0.24s; }
+    .hero .version-meta { animation-delay: 0.32s; }
+    .soundboard-container { animation-delay: 0.38s; }
+    @media (prefers-reduced-motion: reduce) { .hero .pill-badge, .hero h1, .hero p, .hero .hero-actions, .hero .version-meta, .soundboard-container { animation: none; } }
   </style>
 </head>
 <body>
@@ -809,7 +819,7 @@
         <span id="activeKeyIndicator" style="font-family: var(--font-mono); color: var(--accent);">Ready</span>
       </div>
 
-      <input type="text" id="liveInputTester" class="typing-tester-input" placeholder="Type here in the browser to test key feedback..." autofocus>
+      <input type="text" id="liveInputTester" class="typing-tester-input" placeholder="Type here in the browser to test key feedback...">
     </section>
 
     <!-- 15 Sound Packs Section -->
